@@ -1,23 +1,28 @@
 #!/bin/bash
 
-# 获取用户的 HOME 目录
+# 获取用户的 HOME 目录和 GOPATH
 USER_HOME=$(eval echo ~)
+GOPATH=$(go env GOPATH)
 
 # 目标目录
-TARGET_DIR="$HOME/.cpj"
-
-# 源目录
-SOURCE_DIR="./templates"
+TEMPLATES_TARGET_DIR="$USER_HOME/.cpj/templates"
+BIN_TARGET_DIR="$GOPATH/bin"
 
 # 确保目标目录存在，不存在则创建
-mkdir -p "$TARGET_DIR"
+mkdir -p "$TEMPLATES_TARGET_DIR"
+mkdir -p "$BIN_TARGET_DIR"
 
-# 复制源目录到目标目录
-cp -r "$SOURCE_DIR" "$TARGET_DIR"
+# Clone git repository and copy templates directory
+git clone git@github.com:0226zy/cpj.git /tmp/cpj_repo    # 克隆仓库到临时目录
+rsync -av /tmp/cpj_repo/templates/ "$TEMPLATES_TARGET_DIR"  # 将templates目录同步到目标目录
 
-echo "cpj templates directory copied to $TARGET_DIR"
+echo "Templates directory copied to $TEMPLATES_TARGET_DIR"
 
-# 编译项目并安装到 GOPATH/bin
+# 编译项目并安装可执行文件到 GOPATH/bin
+cd /tmp/cpj_repo
 go install
 
-echo "Executable installed to GOPATH/bin"
+echo "cpj installed to $BIN_TARGET_DIR"
+
+# 清理临时目录
+rm -rf /tmp/cpj_repo
