@@ -9,9 +9,15 @@ cpp project mange tool
 
 ## Usage
 
-1. create a c++ project
+1. create c++ project
 
 ```
 cpj create example_pjo
 ```
 
+
+2. build c++ project
+
+```
+cpj build binary_name
+```
