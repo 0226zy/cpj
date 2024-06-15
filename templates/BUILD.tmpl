@@ -1,0 +1,30 @@
+cc_binary(
+    name = "{{.ProjectName}}",
+    srcs = glob([
+    "cmd/main.cpp",
+    "src/*.cpp",
+    "src/*.h"
+    ]),
+    includes=glob([
+    "src/*.h"
+    ]),
+    deps = [],
+    copts = ["-std=c++11"],  
+)
+
+cc_test(
+    name = "{{.ProjectName}}_test",
+    srcs = glob([
+    "test/*.cpp",
+    "src/*.cpp",
+    "src/*.h"
+    ]),
+    includes=glob([
+    "src/*.h"
+    ]),
+    deps = [
+        #":my_library",
+        "@gtest//:gtest_main",
+    ],
+    copts = ["-std=c++11"], 
+)

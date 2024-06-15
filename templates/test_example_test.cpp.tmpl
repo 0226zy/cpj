@@ -1,0 +1,13 @@
+// =========================================================
+// File:        {{ .Filename }}
+// Created:     {{ .Date }}
+// Author:      {{ .Author }}
+// Description: 
+// =========================================================
+#include <gtest/gtest.h>
+#include "src/example.h"
+
+TEST(ExampleTest, StringTest) {
+  Example e;
+  EXPECT_EQ(e.String(), "Hello World!!!");
+}
