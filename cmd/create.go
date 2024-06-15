@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	authorName string // Global variable to store the author name
+	authorName   string // Global variable to store the author name
+	templatesDir string // Global variable to store the templates root directory path
 )
 
 // createCmd represents the create command
@@ -32,10 +33,21 @@ var createCmd = &cobra.Command{
 }
 
 func init() {
+	defaultTemplateDir := os.ExpandEnv("$HOME/.cpj/templates")
 	rootCmd.AddCommand(createCmd)
 
 	// Add flag to allow specifying author name
 	createCmd.Flags().StringVarP(&authorName, "author", "a", "", "Author name")
+
+	// Add flag to allow specifying templates root directory
+	createCmd.Flags().StringVarP(&templatesDir, "templates", "t", defaultTemplateDir, "Templates root directory path")
+
+	// Set default templates directory
+	cobra.OnInitialize(func() {
+		if templatesDir == "" {
+			templatesDir = "./cpj"
+		}
+	})
 }
 
 func determineAuthor(cmd *cobra.Command) string {
@@ -65,11 +77,14 @@ func gitUserName() (string, error) {
 
 func createProject(projectName, author string) {
 	projectPath := filepath.Join(".", projectName)
+
+	// Create project directory
 	err := os.Mkdir(projectPath, 0755)
 	if err != nil {
 		fmt.Println("Error creating project directory:", err)
 		return
 	}
+
 	defer func() {
 		// Handle cleanup in case of error
 		if err != nil {
@@ -81,15 +96,16 @@ func createProject(projectName, author string) {
 	}()
 
 	templates := map[string]string{
-		"WORKSPACE":             "templates/WORKSPACE.tmpl",
-		"BUILD":                 "templates/BUILD.tmpl",
-		"src/example.cpp":       "templates/src_example.cpp.tmpl",
-		"src/example.h":         "templates/src_example.h.tmpl",
-		"cmd/main.cpp":          "templates/cmd_main.cpp.tmpl",
-		"test/example_test.cpp": "templates/test_example_test.cpp.tmpl",
+		"WORKSPACE":             "WORKSPACE.tmpl",
+		"BUILD":                 "BUILD.tmpl",
+		"src/example.cpp":       "src_example.cpp.tmpl",
+		"src/example.h":         "src_example.h.tmpl",
+		"cmd/main.cpp":          "cmd_main.cpp.tmpl",
+		"test/example_test.cpp": "test_example_test.cpp.tmpl",
 	}
 
-	for path, tmplPath := range templates {
+	for path, tmplFile := range templates {
+		tmplPath := filepath.Join(templatesDir, tmplFile)
 		fullPath := filepath.Join(projectPath, path)
 		err := os.MkdirAll(filepath.Dir(fullPath), 0755)
 		if err != nil {
@@ -97,7 +113,7 @@ func createProject(projectName, author string) {
 			return
 		}
 
-		tmpl, err := template.ParseFiles(filepath.Join(tmplPath))
+		tmpl, err := template.ParseFiles(tmplPath)
 		if err != nil {
 			fmt.Println("Error parsing template:", err)
 			return
